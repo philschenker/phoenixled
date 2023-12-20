@@ -76,6 +76,10 @@ void setup() {
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);    // Set power limit of LED strip to 5V, 1500mA
 
   FastLED.clear();                                    // Initialize all LEDs to "OFF"
+
+  FlameHeight = 50;
+  Sparks = 100;
+  DelayDuration = 10;
 }
  
 
