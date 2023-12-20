@@ -1,4 +1,5 @@
 #include "FastLED.h"
+#include "settings_html.h"
 #include <WiFi.h>
 #include <WebServer.h>
 
@@ -39,18 +40,8 @@ void handleUpdate()
     server.send(200, "text/plain", "Update empfangen");
 }
 
-void setupHtml()
-{
-    html = "<html><head><script>function sendData() {";
-    html += "var xhr = new XMLHttpRequest();";
-    html += "xhr.open('GET', '/update?FlameHeight=' + document.getElementById('FlameHeight').value";
-    html += " + '&Sparks=' + document.getElementById('Sparks').value + '&DelayDuration=' + document.getElementById('DelayDuration').value, true);";
-    html += "xhr.send();}</script></head><body>";
-    html += "<h1>ESP32 Slider Steuerung</h1>";
-    html += "<p>FlameHeight: <input type='range' id='FlameHeight' min='0' max='100' onchange='sendData()'></p>";
-    html += "<p>Sparks: <input type='range' id='Sparks' min='0' max='255' onchange='sendData()'></p>";
-    html += "<p>DelayDuration: <input type='range' id='DelayDuration' min='0' max='1000' onchange='sendData()'></p>";
-    html += "</body></html>";
+void setupHtml() {
+  html = htmlContent; // Assign the content from the header file
 }
 
 void setup()
