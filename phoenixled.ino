@@ -4,7 +4,7 @@
  
 
 #define NUM_LEDS  100     // Enter the total number of LEDs on the strip
-#define PIN       0      // The pin connected to DATA line to control the LEDs
+#define PIN       10      // The pin connected to DATA line to control the LEDs
 
 const char* ssid = "Phoenix";
 const char* password = "Flaekegosler";
