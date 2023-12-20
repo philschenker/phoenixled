@@ -12,11 +12,37 @@ const char *password = "Flaekegosler";
 int FlameHeight;
 int Sparks;
 int DelayDuration;
+Preferences preferences;
 
 CRGB leds[NUM_LEDS];
 
 WebServer server(80);
 String html;
+
+void saveSettings(int f, int s, int d) {
+  preferences.begin("myApp", false);
+  preferences.putInt("FlameHeight", f);
+  preferences.putInt("Sparks", s);
+  preferences.putInt("DelayDuration", d);
+  preferences.end();
+}
+
+void loadSettings() {
+  preferences.begin("myApp", true);
+  FlameHeight = preferences.getInt("FlameHeight", 0);
+  if (FlameHeight == 0) {
+    FlameHeight = 50;
+  }
+  Sparks = preferences.getInt("Sparks", 0);
+  if (Sparks == 0) {
+    Sparks = 100;
+  }
+  DelayDuration = preferences.getInt("DelayDuration", 0);
+  if (DelayDuration == 0) {
+    DelayDuration = 10;
+  }
+  preferences.end();
+}
 
 void handleRoot() {
   server.send(200, "text/html", html);
@@ -34,6 +60,8 @@ void handleUpdate() {
   FlameHeight = flameHeightValue.toInt();
   Sparks = sparksValue.toInt();
   DelayDuration = delayDurationValue.toInt();
+
+  saveSettings(FlameHeight, Sparks, DelayDuration);
 
   server.send(200, "text/plain", "Update empfangen");
 }
@@ -70,10 +98,6 @@ void setup() {
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);  // Set power limit of LED strip to 5V, 1500mA
 
   FastLED.clear();  // Initialize all LEDs to "OFF"
-
-  FlameHeight = 50;
-  Sparks = 100;
-  DelayDuration = 10;
 }
 
 // FlameHeight - Use larger value for shorter flames, default=50.
