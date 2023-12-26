@@ -81,7 +81,6 @@ void setup() {
   Serial.println(WiFi.softAPIP());
 
   FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);
   FastLED.clear();
 
   setupHtml();
