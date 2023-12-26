@@ -12,6 +12,7 @@ const char *password = "Flaekegosler";
 int FlameHeight;
 int Sparks;
 int DelayDuration;
+String SelectedMode;
 Preferences preferences;
 
 CRGB leds[NUM_LEDS];
@@ -56,6 +57,7 @@ void handleUpdate() {
   String flameHeightValue = server.arg("FlameHeight");
   String sparksValue = server.arg("Sparks");
   String delayDurationValue = server.arg("DelayDuration");
+  SelectedMode = server.arg("SelMode");
 
   FlameHeight = flameHeightValue.toInt();
   Sparks = sparksValue.toInt();
@@ -63,11 +65,18 @@ void handleUpdate() {
 
   saveSettings(FlameHeight, Sparks, DelayDuration);
 
+  Serial.write("Mode:");
+  Serial.println(SelectedMode);
+
   server.send(200, "text/plain", "Update empfangen");
 }
 
 void setupHtml() {
   html = htmlContent;  // Assign the content from the header file
+
+  html.replace("{{FlameHeight}}", String(FlameHeight));
+  html.replace("{{Sparks}}", String(Sparks));
+  html.replace("{{DelayDuration}}", String(DelayDuration));
 }
 
 void setup() {
@@ -93,8 +102,6 @@ void setup() {
   Serial.println("HTTP-Server gestartet");
 
   FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);  // Set power limit of LED strip to 5V, 1500mA
 
   FastLED.clear();  // Initialize all LEDs to "OFF"
 }
@@ -138,6 +145,16 @@ void Fire(int FlameHeight, int Sparks, int DelayDuration) {
   delay(DelayDuration);
 }
 
+void Rainbow(int DelayDuration) {
+    for (int j = 0; j < 255; j++) {
+      for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CHSV(i - (j * 2), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
+      }
+      FastLED.show();
+      delay(DelayDuration); /* Change this to your hearts desire, the lower the value the faster your colors move (and vice versa) */
+    }
+}
+
 void setPixelHeatColor(int Pixel, byte temperature) {
   // Rescale heat from 0-255 to 0-191
   byte t192 = round((temperature / 255.0) * 191);
@@ -160,5 +177,13 @@ void setPixelHeatColor(int Pixel, byte temperature) {
 
 void loop() {
   server.handleClient();
-  Fire(FlameHeight, Sparks, DelayDuration);
+  Serial.write("Mode:");
+  Serial.println(SelectedMode);
+  if (SelectedMode.equals("rainbow_pony")) {
+    Rainbow(DelayDuration/10);
+  } else if (SelectedMode.equals("star")) {
+    FastLED.clear();
+  } else {
+    Fire(FlameHeight, Sparks, DelayDuration);
+  }
 }
