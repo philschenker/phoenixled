@@ -4,7 +4,7 @@
 #include <WebServer.h>
 #include <Preferences.h>
 
-#define NUM_LEDS 150  // Enter the total number of LEDs on the strip
+#define NUM_LEDS 75  // Enter the total number of LEDs on the strip
 #define PIN 10        // The pin connected to DATA line to control the LEDs
 
 const char *ssid = "Phoenix";
@@ -155,6 +155,17 @@ void Rainbow(int DelayDuration) {
     }
 }
 
+void Sparkle(int delayDuration, int numberOfSparkles) {
+  fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
+
+  for (int i=0; i<numberOfSparkles; i++) {
+    leds[random(NUM_LEDS)].setRGB(255, 255, 255);
+  }
+
+  FastLED.show();
+  delay(delayDuration);
+}
+
 void setPixelHeatColor(int Pixel, byte temperature) {
   // Rescale heat from 0-255 to 0-191
   byte t192 = round((temperature / 255.0) * 191);
@@ -177,12 +188,10 @@ void setPixelHeatColor(int Pixel, byte temperature) {
 
 void loop() {
   server.handleClient();
-  Serial.write("Mode:");
-  Serial.println(SelectedMode);
   if (SelectedMode.equals("rainbow_pony")) {
-    Rainbow(DelayDuration/10);
+    Rainbow(DelayDuration/5);
   } else if (SelectedMode.equals("star")) {
-    FastLED.clear();
+    Sparkle(DelayDuration, Sparks/5);
   } else {
     Fire(FlameHeight, Sparks, DelayDuration);
   }
