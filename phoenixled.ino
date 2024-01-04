@@ -175,6 +175,14 @@ void Sparkle(int delayDuration, int numberOfSparkles) {
 void Dark() {
   FastLED.clearData();
   FastLED.show();
+  delay(100);
+}
+
+void Sun() {
+  CHSV color = CHSV(FlameHeight, Sparks, 255);
+  fill_solid(leds, NUM_LEDS, color);
+  FastLED.show();
+  delay(100);
 }
 
 void setPixelHeatColor(int Pixel, byte temperature) {
@@ -205,6 +213,8 @@ void loop() {
     Sparkle(DelayDuration, Sparks/5);
   } else if (SelectedMode.equals("fire")) {
     Fire(FlameHeight, Sparks, DelayDuration);
+  } else if (SelectedMode.equals("sun")) {
+    Sun();
   } else if (SelectedMode.equals("ape")) {
     Dark();
   }
