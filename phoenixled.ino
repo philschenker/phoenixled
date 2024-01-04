@@ -20,11 +20,12 @@ CRGB leds[NUM_LEDS];
 WebServer server(80);
 String html;
 
-void saveSettings(int f, int s, int d) {
+void saveSettings(int f, int s, int d, String m) {
   preferences.begin("myApp", false);
   preferences.putInt("FlameHeight", f);
   preferences.putInt("Sparks", s);
   preferences.putInt("DelayDuration", d);
+  preferences.putString("SelectedMode", m);
   preferences.end();
 }
 
@@ -41,6 +42,10 @@ void loadSettings() {
   DelayDuration = preferences.getInt("DelayDuration", 0);
   if (DelayDuration == 0) {
     DelayDuration = 10;
+  }
+  SelectedMode = preferences.getString("SelectedMode");
+  if (SelectedMode.equals("")) {
+    SelectedMode = "fire";
   }
   preferences.end();
 }
@@ -63,7 +68,7 @@ void handleUpdate() {
   Sparks = sparksValue.toInt();
   DelayDuration = delayDurationValue.toInt();
 
-  saveSettings(FlameHeight, Sparks, DelayDuration);
+  saveSettings(FlameHeight, Sparks, DelayDuration, SelectedMode);
 
   Serial.write("Mode:");
   Serial.println(SelectedMode);
@@ -103,7 +108,8 @@ void setup() {
 
   FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
-  FastLED.clear();  // Initialize all LEDs to "OFF"
+  FastLED.clearData();
+  FastLED.show();
 }
 
 // FlameHeight - Use larger value for shorter flames, default=50.
