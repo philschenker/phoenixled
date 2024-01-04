@@ -166,6 +166,11 @@ void Sparkle(int delayDuration, int numberOfSparkles) {
   delay(delayDuration);
 }
 
+void Dark() {
+  FastLED.clearData();
+  FastLED.show();
+}
+
 void setPixelHeatColor(int Pixel, byte temperature) {
   // Rescale heat from 0-255 to 0-191
   byte t192 = round((temperature / 255.0) * 191);
@@ -192,7 +197,9 @@ void loop() {
     Rainbow(DelayDuration/5);
   } else if (SelectedMode.equals("star")) {
     Sparkle(DelayDuration, Sparks/5);
-  } else {
+  } else if (SelectedMode.equals("fire")) {
     Fire(FlameHeight, Sparks, DelayDuration);
+  } else if (SelectedMode.equals("ape")) {
+    Dark();
   }
 }
