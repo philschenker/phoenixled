@@ -5,7 +5,6 @@
 #include <Preferences.h>
 
 #define NUM_LEDS 75  // Enter the total number of LEDs on the strip
-#define PIN 10        // The pin connected to DATA line to control the LEDs
 
 const char *ssid = "Phoenix";
 const char *password = "Flaekegosler";
@@ -94,9 +93,6 @@ void setup() {
   Serial.println("IP-Adresse des ESP32 im eigenen WLAN:");
   Serial.println(WiFi.softAPIP());
 
-  FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.clear();
-
   setupHtml();
 
   server.on("/", handleRoot);
@@ -106,7 +102,15 @@ void setup() {
   server.begin();
   Serial.println("HTTP-Server gestartet");
 
-  FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 2, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 3, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 4, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 5, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 7, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 8, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 9, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 10, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.clearData();
   FastLED.show();
