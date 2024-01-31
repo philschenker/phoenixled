@@ -66,8 +66,13 @@ void handleNotFound() {
 }
 
 void setEyeLeds(int b) {
+  int blue = b - 20;
+
+  if (blue < 0)
+    blue = 0;
+
   for (int i = 0; i < NUM_EYE_LEDS; i++) {
-    eye_leds[i].setRGB(b, b, b);
+    eye_leds[i].setRGB(b, b, blue);
   }
 }
 
