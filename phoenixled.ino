@@ -3,9 +3,11 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Preferences.h>
+#include <Wire.h>
 
 #define NUM_LEDS 75  // Enter the total number of LEDs on the strip
 #define NUM_EYE_LEDS 12
+#define INA233_ADDRESS 0x40
 
 const char *ssid = "Phoenix";
 const char *password = "Flaekegosler";
@@ -108,6 +110,7 @@ void setupHtml() {
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin(); // Startet die I2C-Kommunikation
 
   loadSettings();
 
@@ -236,7 +239,23 @@ void setPixelHeatColor(int Pixel, byte temperature) {
   }
 }
 
+void read_i2c() {
+  Wire.beginTransmission(INA233_ADDRESS);
+  Wire.write(0x88); // Sendet den Befehl zum Lesen der Spannung
+  Wire.endTransmission();
+  
+  Wire.requestFrom(INA233_ADDRESS, 2); // Fordert 2 Bytes Daten an
+
+  if (Wire.available() == 2) {
+    uint16_t voltage = Wire.read() << 8 | Wire.read(); // Liest die Spannung
+    Serial.print("Spannung: ");
+    Serial.print(voltage/8); // Umrechnung in Volt
+    Serial.println(" V");
+  }
+}
+
 void loop() {
+  read_i2c();
   server.handleClient();
   if (SelectedMode.equals("rainbow_pony")) {
     Rainbow(DelayDuration/5);
