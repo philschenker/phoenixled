@@ -5,25 +5,29 @@
 #include <Preferences.h>
 
 #define NUM_LEDS 75  // Enter the total number of LEDs on the strip
+#define NUM_EYE_LEDS 12
 
 const char *ssid = "Phoenix";
 const char *password = "Flaekegosler";
 int FlameHeight;
 int Sparks;
 int DelayDuration;
+int EyeBrightness;
 String SelectedMode;
 Preferences preferences;
 
 CRGB leds[NUM_LEDS];
+CRGB eye_leds[NUM_EYE_LEDS];
 
 WebServer server(80);
 String html;
 
-void saveSettings(int f, int s, int d, String m) {
+void saveSettings(int f, int s, int d, int e, String m) {
   preferences.begin("myApp", false);
   preferences.putInt("FlameHeight", f);
   preferences.putInt("Sparks", s);
   preferences.putInt("DelayDuration", d);
+  preferences.putInt("EyeBrightness", e);
   preferences.putString("SelectedMode", m);
   preferences.end();
 }
@@ -42,6 +46,10 @@ void loadSettings() {
   if (DelayDuration == 0) {
     DelayDuration = 10;
   }
+  EyeBrightness = preferences.getInt("EyeBrightness", 0);
+  if (EyeBrightness == 0) {
+    EyeBrightness = 255;
+  }
   SelectedMode = preferences.getString("SelectedMode");
   if (SelectedMode.equals("")) {
     SelectedMode = "fire";
@@ -57,22 +65,31 @@ void handleNotFound() {
   server.send(404, "text/plain", "404: Not Found");
 }
 
+void setEyeLeds(int b) {
+  for (int i = 0; i < NUM_EYE_LEDS; i++) {
+    eye_leds[i].setRGB(b, b, b);
+  }
+}
+
 void handleUpdate() {
   String flameHeightValue = server.arg("FlameHeight");
   String sparksValue = server.arg("Sparks");
   String delayDurationValue = server.arg("DelayDuration");
+  String eyeBrightnessValue = server.arg("EyeBrightness");
   SelectedMode = server.arg("SelMode");
 
   FlameHeight = flameHeightValue.toInt();
   Sparks = sparksValue.toInt();
   DelayDuration = delayDurationValue.toInt();
-
-  saveSettings(FlameHeight, Sparks, DelayDuration, SelectedMode);
+  EyeBrightness = eyeBrightnessValue.toInt();
 
   Serial.write("Mode:");
   Serial.println(SelectedMode);
 
   server.send(200, "text/plain", "Update empfangen");
+  
+  saveSettings(FlameHeight, Sparks, DelayDuration, EyeBrightness, SelectedMode);
+  setEyeLeds(EyeBrightness);
 }
 
 void setupHtml() {
@@ -81,6 +98,7 @@ void setupHtml() {
   html.replace("{{FlameHeight}}", String(FlameHeight));
   html.replace("{{Sparks}}", String(Sparks));
   html.replace("{{DelayDuration}}", String(DelayDuration));
+  html.replace("{{EyeBrightness}}", String(EyeBrightness));
 }
 
 void setup() {
@@ -102,6 +120,7 @@ void setup() {
   server.begin();
   Serial.println("HTTP-Server gestartet");
 
+  FastLED.addLeds<WS2812B, 1, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<WS2812B, 2, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<WS2812B, 3, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<WS2812B, 4, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -113,6 +132,9 @@ void setup() {
   FastLED.addLeds<WS2812B, 10, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.clearData();
+  
+  setEyeLeds(EyeBrightness);
+
   FastLED.show();
 }
 

@@ -103,17 +103,20 @@ const char* htmlContent = R"(
             var flameHeight = document.getElementById('FlameHeight').value;
             var sparks = document.getElementById('Sparks').value;
             var delayDuration = document.getElementById('DelayDuration').value;
+            var eyeBrightness = document.getElementById('EyeBrighntess').value;
             var selMode = document.querySelector('input[name="selection"]:checked').value;
 
             // Update the display elements
             document.getElementById('FlameHeightValue').textContent = flameHeight;
             document.getElementById('SparksValue').textContent = sparks;
             document.getElementById('DelayDurationValue').textContent = delayDuration;
+            document.getElementById('EyeBrighntess').textContent = eyeBrightness;
 
             // Send the data
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/update?FlameHeight=' + flameHeight
                 + '&Sparks=' + sparks + '&DelayDuration=' + delayDuration
+                + '&EyeBrightness=' + eyeBrightness
                 + '&SelMode=' + selMode, true);
             xhr.send();
         }
@@ -150,18 +153,30 @@ const char* htmlContent = R"(
                 output.innerHTML = this.value;
             }
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var DelaySlider = document.getElementById('EyeBrightness');
+            var output = document.getElementById('EyeBrightnessValue');
+
+            DelaySlider.oninput = function() {
+                output.innerHTML = this.value;
+            }
+        });
     </script>
 </head>
 <body onload='initializeValues()'>
     <h1>Phoenix LED</h1>
-    <p>FlameHeight/Color: <span id='FlameHeightValue'></span>
-            <input type='range' id='FlameHeight' min='0' max='500' value='{{FlameHeight}}' onchange='sendData()'>
+    <p>Flammenhöhe/Farbe: <span id='FlameHeightValue'></span>
+        <input type='range' id='FlameHeight' min='0' max='500' value='{{FlameHeight}}' onchange='sendData()'>
     </p>
-    <p>Sparks/Saturation: <span id='SparksValue'></span>
+    <p>Funken/Sättigung: <span id='SparksValue'></span>
         <input type='range' id='Sparks' min='0' max='255' value='{{Sparks}}' onchange='sendData()'>
     </p>
-    <p>DelayDuration: <span id='DelayDurationValue'></span>
+    <p>Geschwindigkeit: <span id='DelayDurationValue'></span>
         <input type='range' id='DelayDuration' min='0' max='100' value='{{DelayDuration}}' onchange='sendData()'>
+    </p>
+    <p>Helligkeit Augen: <span id='EyeBrightnessValue'></span>
+        <input type='range' id='EyeBrightness' min='0' max='255' value='{{EyeBrightness}}' onchange='sendData()'>
     </p>
     <div class="selector">
         <label class="smiley">
