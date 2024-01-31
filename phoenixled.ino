@@ -66,7 +66,7 @@ void handleNotFound() {
 }
 
 void setEyeLeds(int b) {
-  int blue = b - 20;
+  int blue = b/10;
 
   if (blue < 0)
     blue = 0;
