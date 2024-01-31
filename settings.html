@@ -99,14 +99,14 @@
             var flameHeight = document.getElementById('FlameHeight').value;
             var sparks = document.getElementById('Sparks').value;
             var delayDuration = document.getElementById('DelayDuration').value;
-            var eyeBrightness = document.getElementById('EyeBrighntess').value;
+            var eyeBrightness = document.getElementById('EyeBrightness').value;
             var selMode = document.querySelector('input[name="selection"]:checked').value;
 
             // Update the display elements
             document.getElementById('FlameHeightValue').textContent = flameHeight;
             document.getElementById('SparksValue').textContent = sparks;
             document.getElementById('DelayDurationValue').textContent = delayDuration;
-            document.getElementById('EyeBrighntess').textContent = eyeBrightness;
+            document.getElementById('EyeBrightnessValue').textContent = eyeBrightness;
 
             // Send the data
             var xhr = new XMLHttpRequest();
@@ -162,10 +162,10 @@
 </head>
 <body onload='initializeValues()'>
     <h1>Phoenix LED</h1>
-    <p>Flammenhöhe/Farbe: <span id='FlameHeightValue'></span>
+    <p>Flammenhoehe/Farbe: <span id='FlameHeightValue'></span>
         <input type='range' id='FlameHeight' min='0' max='500' value='{{FlameHeight}}' onchange='sendData()'>
     </p>
-    <p>Funken/Sättigung: <span id='SparksValue'></span>
+    <p>Funken/Saettigung: <span id='SparksValue'></span>
         <input type='range' id='Sparks' min='0' max='255' value='{{Sparks}}' onchange='sendData()'>
     </p>
     <p>Geschwindigkeit: <span id='DelayDurationValue'></span>
