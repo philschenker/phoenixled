@@ -33,12 +33,19 @@ int last_time_voltage_read_millis = 0;
 bool bat_empty = false;
 String SelectedMode;
 Preferences preferences;
+TaskHandle_t task_webapp_handle;
 
 CRGB leds[NUM_LEDS];
 CRGB eye_leds[NUM_EYE_LEDS];
 
 WebServer server(80);
 String html;
+
+void task_webapp(void * pvParameters) {
+  for (;;) {
+    server.handleClient();
+  }
+}
 
 void saveSettings(int f, int s, int d, int e, String m, int b) {
   preferences.begin("myApp", false);
@@ -200,6 +207,15 @@ void setup() {
   server.on("/voltages", HTTP_GET, handleVoltages);
   server.onNotFound(handleNotFound);
 
+  xTaskCreatePinnedToCore(
+                    task_webapp,   /* Task function. */
+                    "task_webapp",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &task_webapp_handle,      /* Task handle to keep track of created task */
+                    1);          /* pin task to core 1, loop is running on 0 */
+
   server.begin();
   Serial.println("HTTP-Server gestartet");
 
@@ -326,7 +342,6 @@ void periodically_read_voltage() {
 }
 
 void loop() {
-  server.handleClient();
   periodically_read_voltage();
 
   if (voltage_bat1 > (voltage_bat_empty- + VOLTAGE_BAT_TURN_ON_HYST) ||
