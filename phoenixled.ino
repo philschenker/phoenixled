@@ -18,7 +18,7 @@
 
 #define VOLTAGE_MEAS_PERIOD_MS 2000
 #define VOLTAGE_BAT_EMPTY_DEFAULT 1400
-#define VOLTAGE_BAT_TURN_ON_HYST 100
+#define VOLTAGE_BAT_TURN_ON_HYST 300
 
 const char *ssid = "Phoenix";
 const char *password = "Flaekegosler";
@@ -344,14 +344,15 @@ void periodically_read_voltage() {
 void loop() {
   periodically_read_voltage();
 
-  if (voltage_bat1 > (voltage_bat_empty- + VOLTAGE_BAT_TURN_ON_HYST) ||
-      voltage_bat2 > (voltage_bat_empty + VOLTAGE_BAT_TURN_ON_HYST))
+  if ((voltage_bat1 > (voltage_bat_empty + VOLTAGE_BAT_TURN_ON_HYST)) || (voltage_bat2 > (voltage_bat_empty + VOLTAGE_BAT_TURN_ON_HYST))) {
     bat_empty = false;
+  }
 
   if (bat_empty)
     return;
 
-  if (voltage_bat1 < voltage_bat_empty && voltage_bat2 < voltage_bat_empty) {
+  if (voltage_bat1 < voltage_bat_empty && voltage_bat2 < voltage_bat_empty && !(voltage_bat1 == 0 || voltage_bat2 == 0)) {
+    Serial.printf("Voltage too low detected, declare battery empty\n");
     bat_empty = true;
     FastLED.clearData();
     FastLED.show();
