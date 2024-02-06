@@ -104,6 +104,7 @@ const char* htmlContent = R"(
             var sparks = document.getElementById('Sparks').value;
             var delayDuration = document.getElementById('DelayDuration').value;
             var eyeBrightness = document.getElementById('EyeBrightness').value;
+            var batEmpty = document.getElementById('BatEmpty').value;
             var selMode = document.querySelector('input[name="selection"]:checked').value;
 
             // Update the display elements
@@ -111,13 +112,14 @@ const char* htmlContent = R"(
             document.getElementById('SparksValue').textContent = sparks;
             document.getElementById('DelayDurationValue').textContent = delayDuration;
             document.getElementById('EyeBrightnessValue').textContent = eyeBrightness;
+            document.getElementById('BatEmptyValue').textContent = batEmpty;
 
             // Send the data
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/update?FlameHeight=' + flameHeight
                 + '&Sparks=' + sparks + '&DelayDuration=' + delayDuration
                 + '&EyeBrightness=' + eyeBrightness
-                + '&SelMode=' + selMode, true);
+                + '&SelMode=' + selMode + '&BatEmpty=' + batEmpty, true);
             xhr.send();
         }
 
@@ -155,13 +157,35 @@ const char* htmlContent = R"(
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            var DelaySlider = document.getElementById('EyeBrightness');
+            var EyeSlider = document.getElementById('EyeBrightness');
             var output = document.getElementById('EyeBrightnessValue');
 
-            DelaySlider.oninput = function() {
+            EyeSlider.oninput = function() {
                 output.innerHTML = this.value;
             }
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var BatSlider = document.getElementById('BatEmpty');
+            var output = document.getElementById('BatEmptyValue');
+
+            BatSlider.oninput = function() {
+                output.innerHTML = this.value;
+            }
+        });
+
+        function fetchVoltages() {
+            fetch('/voltages')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('voltagesDisplay').innerText = data;
+                })
+                .catch(console.error);
+        }
+
+        setInterval(fetchVoltages, 2000);
+
+        window.onload = fetchVoltage;
     </script>
 </head>
 <body onload='initializeValues()'>
@@ -178,6 +202,10 @@ const char* htmlContent = R"(
     <p>Helligkeit Augen: <span id='EyeBrightnessValue'></span>
         <input type='range' id='EyeBrightness' min='0' max='255' value='{{EyeBrightness}}' onchange='sendData()'>
     </p>
+    <p>Batterie Leer Spannung (centi-Volt): <span id='BatEmptyValue'></span>
+        <input type='range' id='BatEmpty' min='1000' max='1600' value='{{BatEmpty}}' onchange='sendData()'>
+    </p>
+    <p>Batterie Spannungen: <span id="voltagesDisplay">Loading...</span></p>
     <div class="selector">
         <label class="smiley">
             <input type="radio" name="selection" value="fire" onchange='sendData()'>
@@ -202,7 +230,6 @@ const char* htmlContent = R"(
     </div>
 </body>
 </html>
-
 )";
 
 #endif /* SETTINGS_HTML_H */

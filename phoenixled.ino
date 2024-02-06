@@ -3,9 +3,22 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Preferences.h>
+#include <Wire.h>
 
 #define NUM_LEDS 75  // Enter the total number of LEDs on the strip
 #define NUM_EYE_LEDS 12
+
+#define INA233_ADDRESS_DEV1 0x40
+#define INA233_ADDRESS_DEV2 0x41
+
+#define INA233_READ_EIN 0x86
+#define INA233_READ_VIN 0x88
+#define INA233_READ_IN 0x89
+#define INA233_READ_PIN 0x97
+
+#define VOLTAGE_MEAS_PERIOD_MS 2000
+#define VOLTAGE_BAT_EMPTY_DEFAULT 1400
+#define VOLTAGE_BAT_TURN_ON_HYST 100
 
 const char *ssid = "Phoenix";
 const char *password = "Flaekegosler";
@@ -13,6 +26,11 @@ int FlameHeight;
 int Sparks;
 int DelayDuration;
 int EyeBrightness;
+uint16_t voltage_bat1 = 0;
+uint16_t voltage_bat2  = 0;
+uint16_t voltage_bat_empty = 0;
+int last_time_voltage_read_millis = 0;
+bool bat_empty = false;
 String SelectedMode;
 Preferences preferences;
 
@@ -22,13 +40,14 @@ CRGB eye_leds[NUM_EYE_LEDS];
 WebServer server(80);
 String html;
 
-void saveSettings(int f, int s, int d, int e, String m) {
+void saveSettings(int f, int s, int d, int e, String m, int b) {
   preferences.begin("myApp", false);
   preferences.putInt("FlameHeight", f);
   preferences.putInt("Sparks", s);
   preferences.putInt("DelayDuration", d);
   preferences.putInt("EyeBrightness", e);
   preferences.putString("SelectedMode", m);
+  preferences.putInt("VoltageBatEmpty", b);
   preferences.end();
 }
 
@@ -53,6 +72,10 @@ void loadSettings() {
   SelectedMode = preferences.getString("SelectedMode");
   if (SelectedMode.equals("")) {
     SelectedMode = "fire";
+  }
+  voltage_bat_empty = preferences.getInt("VoltageBatEmpty");
+  if (SelectedMode.equals("")) {
+    voltage_bat_empty = VOLTAGE_BAT_EMPTY_DEFAULT;
   }
   preferences.end();
 }
@@ -81,20 +104,72 @@ void handleUpdate() {
   String sparksValue = server.arg("Sparks");
   String delayDurationValue = server.arg("DelayDuration");
   String eyeBrightnessValue = server.arg("EyeBrightness");
+  String batEmptyValue = server.arg("BatEmpty");
   SelectedMode = server.arg("SelMode");
 
   FlameHeight = flameHeightValue.toInt();
   Sparks = sparksValue.toInt();
   DelayDuration = delayDurationValue.toInt();
   EyeBrightness = eyeBrightnessValue.toInt();
+  voltage_bat_empty = batEmptyValue.toInt();
 
   Serial.write("Mode:");
   Serial.println(SelectedMode);
 
   server.send(200, "text/plain", "Update empfangen");
-  
-  saveSettings(FlameHeight, Sparks, DelayDuration, EyeBrightness, SelectedMode);
+
+  saveSettings(FlameHeight, Sparks, DelayDuration, EyeBrightness, SelectedMode, voltage_bat_empty);
   setEyeLeds(EyeBrightness);
+}
+
+uint16_t ina233_read(uint8_t i2c_address) {
+  uint8_t byte1;
+  uint8_t byte2;
+
+  Wire.beginTransmission(i2c_address);
+  Wire.write(INA233_READ_VIN);
+  Wire.endTransmission();
+
+  Wire.requestFrom(i2c_address, 3);
+  // We don't need first byte which holds how many bytes can be read
+  Wire.read();
+
+  if (Wire.available()) {
+    byte1 = Wire.read();
+  } else {
+    Serial.write("byte1 was not available");
+  }
+
+  if (Wire.available()) {
+    byte2 = Wire.read();
+  } else {
+    Serial.write("byte2 was not available");
+  }
+
+  return (byte1 << 8) | byte2;
+}
+
+uint16_t ina233_read_voltage(uint8_t i2c_addr) {
+  return ina233_read(i2c_addr)/8;
+}
+
+uint16_t ina233_read_voltage1() {
+  return ina233_read_voltage(INA233_ADDRESS_DEV1);
+}
+
+uint16_t ina233_read_voltage2() {
+  return ina233_read_voltage(INA233_ADDRESS_DEV2);
+}
+
+void handleVoltages() {  
+  // Konvertierung der Spannungen in Volt (angenommen, die Werte sind in Centi-Volt)
+  float voltage1InVolts = voltage_bat1 / 100.0;
+  float voltage2InVolts = voltage_bat2 / 100.0;
+  
+  // Erstellen eines Strings, der beide Spannungswerte enthält
+  String voltagesString = "Bat1: " + String(voltage1InVolts, 2) + "V, Bat2: " + String(voltage2InVolts, 2) + "V";
+  
+  server.send(200, "text/plain", voltagesString);
 }
 
 void setupHtml() {
@@ -104,10 +179,12 @@ void setupHtml() {
   html.replace("{{Sparks}}", String(Sparks));
   html.replace("{{DelayDuration}}", String(DelayDuration));
   html.replace("{{EyeBrightness}}", String(EyeBrightness));
+  html.replace("{{BatEmpty}}", String(voltage_bat_empty));
 }
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin();
 
   loadSettings();
 
@@ -120,6 +197,7 @@ void setup() {
 
   server.on("/", handleRoot);
   server.on("/update", HTTP_GET, handleUpdate);
+  server.on("/voltages", HTTP_GET, handleVoltages);
   server.onNotFound(handleNotFound);
 
   server.begin();
@@ -137,7 +215,7 @@ void setup() {
   FastLED.addLeds<WS2812B, 10, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.clearData();
-  
+
   setEyeLeds(EyeBrightness);
 
   FastLED.show();
@@ -236,8 +314,35 @@ void setPixelHeatColor(int Pixel, byte temperature) {
   }
 }
 
+void periodically_read_voltage() {
+  if ((millis() - last_time_voltage_read_millis) < VOLTAGE_MEAS_PERIOD_MS)
+    return;
+
+  last_time_voltage_read_millis = millis();
+
+  voltage_bat1 = ina233_read_voltage1();
+  voltage_bat2 = ina233_read_voltage2();
+  Serial.printf("Volt1: %d, Volt2: %d\n", voltage_bat1, voltage_bat2);
+}
+
 void loop() {
   server.handleClient();
+  periodically_read_voltage();
+
+  if (voltage_bat1 > (voltage_bat_empty- + VOLTAGE_BAT_TURN_ON_HYST) ||
+      voltage_bat2 > (voltage_bat_empty + VOLTAGE_BAT_TURN_ON_HYST))
+    bat_empty = false;
+
+  if (bat_empty)
+    return;
+
+  if (voltage_bat1 < voltage_bat_empty && voltage_bat2 < voltage_bat_empty) {
+    bat_empty = true;
+    FastLED.clearData();
+    FastLED.show();
+    return;
+  }
+  
   if (SelectedMode.equals("rainbow_pony")) {
     Rainbow(DelayDuration/5);
   } else if (SelectedMode.equals("star")) {
