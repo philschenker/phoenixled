@@ -5,8 +5,8 @@
 #include <Preferences.h>
 #include <Wire.h>
 
-#define NUM_LEDS 75  // Enter the total number of LEDs on the strip
-#define NUM_EYE_LEDS 12
+#define NUM_LEDS 10  // Enter the total number of LEDs on the strip
+#define NUM_EYE_LEDS 30
 
 #define INA233_ADDRESS_DEV1 0x40
 #define INA233_ADDRESS_DEV2 0x41
@@ -74,7 +74,7 @@ void loadSettings() {
   }
   EyeBrightness = preferences.getInt("EyeBrightness", 0);
   if (EyeBrightness == 0) {
-    EyeBrightness = 255;
+    EyeBrightness = 100;
   }
   SelectedMode = preferences.getString("SelectedMode");
   if (SelectedMode.equals("")) {
@@ -95,14 +95,15 @@ void handleNotFound() {
   server.send(404, "text/plain", "404: Not Found");
 }
 
-void setEyeLeds(int b) {
-  int blue = b/10;
+void setEyeLeds(int percentage_brigtness) {
+  int rd, gn, bl;
 
-  if (blue < 0)
-    blue = 0;
+  rd = 255;
+  gn = 169;
+  bl = 87;
 
   for (int i = 0; i < NUM_EYE_LEDS; i++) {
-    eye_leds[i].setRGB(b, b, blue);
+    eye_leds[i].setRGB(rd*percentage_brigtness/100, gn*percentage_brigtness/100, bl*percentage_brigtness/100);
   }
 }
 
@@ -219,16 +220,16 @@ void setup() {
   server.begin();
   Serial.println("HTTP-Server gestartet");
 
-  FastLED.addLeds<WS2812B, 1, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 2, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 3, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 4, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 5, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 7, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 8, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 9, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 10, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 1, GRB>(leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 2, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 3, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 4, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 5, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 6, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 7, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 8, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 9, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 10, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.clearData();
 

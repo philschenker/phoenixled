@@ -200,7 +200,7 @@ const char* htmlContent = R"(
         <input type='range' id='DelayDuration' min='0' max='100' value='{{DelayDuration}}' onchange='sendData()'>
     </p>
     <p>Helligkeit Augen: <span id='EyeBrightnessValue'></span>
-        <input type='range' id='EyeBrightness' min='0' max='255' value='{{EyeBrightness}}' onchange='sendData()'>
+        <input type='range' id='EyeBrightness' min='0' max='100' value='{{EyeBrightness}}' onchange='sendData()'>
     </p>
     <p>Batterie Leer Spannung (centi-Volt): <span id='BatEmptyValue'></span>
         <input type='range' id='BatEmpty' min='1000' max='1600' value='{{BatEmpty}}' onchange='sendData()'>
