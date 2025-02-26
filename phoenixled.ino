@@ -6,7 +6,7 @@
 #include <Wire.h>
 
 #define NUM_LEDS 10  // Enter the total number of LEDs on the strip
-#define NUM_EYE_LEDS 30
+#define NUM_EYE_LEDS 100
 
 #define INA233_ADDRESS_DEV1 0x40
 #define INA233_ADDRESS_DEV2 0x41
@@ -99,8 +99,8 @@ void setEyeLeds(int percentage_brigtness) {
   int rd, gn, bl;
 
   rd = 255;
-  gn = 169;
-  bl = 87;
+  gn = 138;
+  bl = 18;
 
   for (int i = 0; i < NUM_EYE_LEDS; i++) {
     eye_leds[i].setRGB(rd*percentage_brigtness/100, gn*percentage_brigtness/100, bl*percentage_brigtness/100);
@@ -196,44 +196,44 @@ void setup() {
 
   loadSettings();
 
-  WiFi.softAP(ssid, password);
-  Serial.println("Access Point gestartet");
-  Serial.println("IP-Adresse des ESP32 im eigenen WLAN:");
+  //WiFi.softAP(ssid, password);
+  //Serial.println("Access Point gestartet");
+  //Serial.println("IP-Adresse des ESP32 im eigenen WLAN:");
   Serial.println(WiFi.softAPIP());
 
-  setupHtml();
+  //setupHtml();
 
-  server.on("/", handleRoot);
-  server.on("/update", HTTP_GET, handleUpdate);
-  server.on("/voltages", HTTP_GET, handleVoltages);
-  server.onNotFound(handleNotFound);
+  //server.on("/", handleRoot);
+  //server.on("/update", HTTP_GET, handleUpdate);
+  //server.on("/voltages", HTTP_GET, handleVoltages);
+  //server.onNotFound(handleNotFound);
 
-  xTaskCreatePinnedToCore(
-                    task_webapp,   /* Task function. */
-                    "task_webapp",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    &task_webapp_handle,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1, loop is running on 0 */
+  //xTaskCreatePinnedToCore(
+  //                  task_webapp,   /* Task function. */
+  //                  "task_webapp",     /* name of task. */
+  //                  10000,       /* Stack size of task */
+  //                  NULL,        /* parameter of the task */
+  //                  1,           /* priority of the task */
+  //                  &task_webapp_handle,      /* Task handle to keep track of created task */
+  //                  1);          /* pin task to core 1, loop is running on 0 */
 
-  server.begin();
-  Serial.println("HTTP-Server gestartet");
+  //server.begin();
+  //Serial.println("HTTP-Server gestartet");
 
-  FastLED.addLeds<WS2812B, 1, GRB>(leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 2, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 3, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 4, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 5, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 6, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 7, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 8, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 9, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 10, GRB>(eye_leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 1, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 2, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 3, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 4, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 5, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 6, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 7, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 8, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 9, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 10, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.clearData();
 
-  setEyeLeds(EyeBrightness);
+  setEyeLeds(100);
 
   FastLED.show();
 }
