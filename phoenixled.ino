@@ -20,7 +20,7 @@
 #define VOLTAGE_BAT_EMPTY_DEFAULT 1400
 #define VOLTAGE_BAT_TURN_ON_HYST 300
 
-const char *ssid = "Phoenix";
+const char *ssid = "Mungg";
 const char *password = "Flaekegosler";
 int FlameHeight;
 int Sparks;
@@ -196,29 +196,29 @@ void setup() {
 
   loadSettings();
 
-  //WiFi.softAP(ssid, password);
-  //Serial.println("Access Point gestartet");
-  //Serial.println("IP-Adresse des ESP32 im eigenen WLAN:");
+  WiFi.softAP(ssid, password);
+  Serial.println("Access Point gestartet");
+  Serial.println("IP-Adresse des ESP32 im eigenen WLAN:");
   Serial.println(WiFi.softAPIP());
 
-  //setupHtml();
+  setupHtml();
 
-  //server.on("/", handleRoot);
-  //server.on("/update", HTTP_GET, handleUpdate);
-  //server.on("/voltages", HTTP_GET, handleVoltages);
-  //server.onNotFound(handleNotFound);
+  server.on("/", handleRoot);
+  server.on("/update", HTTP_GET, handleUpdate);
+  server.on("/voltages", HTTP_GET, handleVoltages);
+  server.onNotFound(handleNotFound);
 
-  //xTaskCreatePinnedToCore(
-  //                  task_webapp,   /* Task function. */
-  //                  "task_webapp",     /* name of task. */
-  //                  10000,       /* Stack size of task */
-  //                  NULL,        /* parameter of the task */
-  //                  1,           /* priority of the task */
-  //                  &task_webapp_handle,      /* Task handle to keep track of created task */
-  //                  1);          /* pin task to core 1, loop is running on 0 */
+  xTaskCreatePinnedToCore(
+                    task_webapp,   /* Task function. */
+                    "task_webapp",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &task_webapp_handle,      /* Task handle to keep track of created task */
+                    1);          /* pin task to core 1, loop is running on 0 */
 
-  //server.begin();
-  //Serial.println("HTTP-Server gestartet");
+  server.begin();
+  Serial.println("HTTP-Server gestartet");
 
   FastLED.addLeds<WS2812B, 1, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<WS2812B, 2, GRB>(eye_leds, NUM_EYE_LEDS).setCorrection(TypicalLEDStrip);
